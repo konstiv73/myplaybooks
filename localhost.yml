@@ -1,0 +1,59 @@
+- become: yes
+  name: bootstrap
+  hosts: control
+  tasks:
+    - name: full system upgrade
+      become: yes
+      pacman:
+        update_cache: yes
+        upgrade: yes
+      tags: system_update
+      
+    - name: install zsh
+      become: yes
+      block:
+        - pacman:
+            name:
+              - zsh
+              - vim
+              - git
+              - mc
+              - pipenv
+        - command: chsh -s /usr/bin/zsh
+          become_user: yes
+    - name: create aur_builder user
+      become: yes
+      block:
+        - user:
+            name: aur_builder
+            groups: wheel
+        - lineinfile:
+            path: /etc/sudoers.d/11-install-aur_builder
+            line: 'aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman'
+            create: yes
+            validate: '/usr/sbin/visudo -cf %s'
+      tags: aur_builder
+
+    - name: install cli apps
+      become: yes
+      pacman:
+        name:
+          - wget
+          - tmux
+        state: present
+
+    - name: install virtualbox
+      become: yes
+      block:
+        - pacman:
+            name:
+              - virtualbox
+              - virtualbox-host-modules-arch
+      tags: virtualbox
+
+    - name: install python 3.7
+      block:
+        - aur: name=python37 use=yay state=present
+          become: yes
+          become_user: koks
+      tags: python37
