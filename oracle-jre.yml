@@ -1,0 +1,28 @@
+- name: Install Oracle-JRE 8.271 to Debian server
+  hosts: monicent
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: create directory for jvm
+      file:
+        path: /usr/lib/jvm
+        state: directory
+        mode: 0755
+    - name: unpack jvm to server
+      unarchive:
+        src: ./files/jre-8u271-linux-x64.tar.gz
+        dest: /usr/lib/jvm
+    - name: correct java version selected
+      alternatives:
+        name: java
+        link: /usr/bin/java
+        path: /usr/lib/jvm/jre1.8.0_271/bin/java
+    - name: correct javaws version selected
+      alternatives:
+        name: javaws
+        link: /usr/bin/javaws
+        path: /usr/lib/jvm/jre1.8.0_271/bin/javaws
+    - name: set JAVA_HOME environmrnt variable
+      shell: echo "JAVA_HOME=/usr/lib/jvm/jre1.8.0_271" >> /etc/environment
+    - name: unconditionally reboot the machine with all defaults
+      reboot:
