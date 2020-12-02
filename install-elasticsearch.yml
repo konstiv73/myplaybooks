@@ -1,0 +1,37 @@
+- name: Install Elasticsearch to server
+  hosts: monicent
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: install service packages
+      apt:
+        name:
+        - apt-transport-https
+        - wget
+    - name: add Elasticsearch gpg key
+      apt_key:
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    - name: add Elasticsearch repo
+      apt_repository:
+        repo: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+    - name: install Elasticsearch package
+      apt:
+        name: elasticsearch
+        update_cache: yes
+    - name: start and enable Elasticsearch service
+      systemd:
+        name: elasticsearch
+        state: started
+        daemon_reload: yes
+        enabled: yes
+    - name: copy Elasticsearch config to server
+      copy:
+        src: /home/koks/fullstack/playbooks/files/elasticsearch.yml
+        dest: /etc/elasticsearch/elasticsearch.yml
+        owner: root
+        group: root
+        mode: 0644
+    - name: restart Elasticsearch service
+      systemd:
+        name: elasticsearch
+        state: restarted

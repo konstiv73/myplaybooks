@@ -1,0 +1,26 @@
+- name: Install Kibana to same server with Elasticsearch
+  hosts: monicent
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: install Kibana package
+      apt:
+        name: kibana
+        update_cache: yes
+    - name: start and enable Kibana service
+      systemd:
+        name: kibana
+        state: started
+        daemon_reload: yes
+        enabled: yes
+    - name: copy Kibana config to server
+      copy:
+        src: /home/koks/fullstack/playbooks/files/kibana.yml
+        dest: /etc/kibana/kibana.yml
+        owner: root
+        group: root
+        mode: 0644
+    - name: restart Kibana service
+      systemd:
+        name: kibana
+        state: restarted

@@ -13,3 +13,4 @@
           - git
           - wget
           - curl
+          - net-tools
