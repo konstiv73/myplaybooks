@@ -1,0 +1,42 @@
+- name: Install Nginx for ELK stack
+  hosts: monicent
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: install Nginx and apache2-utils
+      apt:
+        name:
+          - nginx
+          - apache2-utils
+          - python-passlib
+        update_cache: yes
+        state: present
+    - name: set basic autenthication passwd
+      htpasswd:
+        path: /etc/nginx/htpasswd.elk
+        name: kibanauser
+        password: 'KibKoks!1'
+        owner: root
+        group: www-data
+        mode: 0640
+    - name: remove default host
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+    - name: copy Nginx config to server
+      copy:
+        src: /home/koks/fullstack/playbooks/files/elk
+        dest: /etc/nginx/sites-available/elk
+        owner: root
+        group: www-data
+        mode: 0644
+    - name: enable kibana host
+      file:
+        src: /etc/nginx/sites-available/elk
+        dest: /etc/nginx/sites-enabled/elk
+        state: link
+    - name: restart Nginx service
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes
