@@ -1,0 +1,62 @@
+- name: Install Grafana to server
+  hosts: monicent
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: add prometeus user
+      user:
+        name: prometheus
+        home: /
+    - name: unarchive Prometeus
+      unarchive:
+        src: https://github.com/prometheus/prometheus/releases/download/v2.23.0/prometheus-2.23.0.linux-amd64.tar.gz
+        dest: /tmp
+        remote_src: yes
+        owner: root
+        group: root
+    - name: copy Prometeus to places
+      copy:
+        src: '/tmp/prometheus-2.23.0.linux-amd64/{{ item.src }}'
+        dest: '/usr/local/bin/{{ item.dest }}'
+        mode: '0755'
+        remote_src: yes
+      loop:
+        - { src: prometheus, dest: prometheus }
+        - { src: promtool, dest: promtool }
+    - name: make needed dirs
+      file:
+        path: '{{ item.path }}'
+        state: directory
+        mode: '0755'
+      loop:
+        - { path: /etc/prometheus }
+        - { path: /var/lib/prometheus }
+    - name: copy files
+      copy:
+        src: /tmp/prometheus-2.23.0.linux-amd64/prometheus.yml
+        dest: /etc/prometheus/prometheus.yml
+        mode: '0644'
+        remote_src: yes
+    - name: chown
+      file:
+        path: /var/lib/prometheus
+        state: directory
+        recurse: yes
+        owner: prometheus
+        group: prometheus
+        mode: '0755'
+    - name: make unit-file for prometheus.service
+      copy:
+        src: /home/koks/fullstack/playbooks/files/prometheus.service
+        dest: /etc/systemd/system/prometheus.service
+        mode: '644'
+    - name: start and enable Prometeus service
+      systemd:
+        name: prometheus.service
+        state: started
+        daemon_reload: yes
+        enabled: yes
+
+
+
+

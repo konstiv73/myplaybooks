@@ -1,0 +1,34 @@
+- name: Install Logstash to same server with Elasticsearch
+  hosts: monicent
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: install Logstash package
+      apt:
+        name: logstash
+        update_cache: yes
+    - name: copy Logstash input config to server
+      copy:
+        src: /home/koks/fullstack/playbooks/files/logstash-input.conf
+        dest: /etc/logstash/conf.d/input.conf
+        owner: root
+        group: root
+        mode: 0644
+    - name: copy Logstash output to server
+      copy:
+        src: /home/koks/fullstack/playbooks/files/logstash-output.conf
+        dest: /etc/logstash/conf.d/output.conf
+        owner: root
+        group: root
+        mode: 0644
+    - name: copy Logstash filters config to server
+      copy:
+        src: /home/koks/fullstack/playbooks/files/logstash-filter.conf
+        dest: /etc/logstash/conf.d/filter.conf
+        owner: root
+        group: root
+        mode: 0644
+    - name: start Logstash service
+      systemd:
+        name: logstash.service
+        state: started
