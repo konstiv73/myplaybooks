@@ -15,7 +15,7 @@
       htpasswd:
         path: /etc/nginx/htpasswd.elk
         name: kibanauser
-        password: 'KibKoks!1'
+        password: ''
         owner: root
         group: www-data
         mode: 0640
