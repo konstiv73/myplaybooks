@@ -1,11 +1,15 @@
-- name: Configure common server features
-  hosts: monicent
-  become: yes
+- name: Install common server features
+  hosts: aveso.ru
+  vars:
+    the_user: "{{ ansible_user_id }}"
+  become: no
   become_method: sudo
   tasks:
-    - name: install tools
+    - name: install console tools
+      become: yes
       apt:
         name:
+          - zsh
           - tmux
           - vim
           - mc
@@ -14,3 +18,9 @@
           - wget
           - curl
           - net-tools
+
+    - name: change user shell to zsh
+      become: yes
+      user:
+        name: "{{ the_user }}"
+        shell: /usr/bin/zsh
